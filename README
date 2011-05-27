@@ -1,7 +1,16 @@
 # Plan
 
+## Goal
+
+* Reduce HTTP requests on the main web site call by offloading to a single request to a smart NODE server.
+
 ## Merge Async Requests
 
 * Facebook and Twitter requests for 'like' counts are simple to fetch, but require either multiple http requests or extra load via FB javascript library
 * Avoid this by taking combined set of urls, use caching on a service (this app) to fetch urls and counts, and return like quantities.
 * Profit.
+
+## Event based
+
+* Take JSONP and return a method type response that inserts/provides the like values.
+
