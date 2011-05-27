@@ -16,7 +16,7 @@ var twitter_client = http.createClient(80, "api.facebook.com"),
 function getTweetCount(uri) {
     
     var req = twitter_client.request("GET", "/1/urls/count.json?url="+uri);
-	var tweetCount = '';
+	var tweetCount = 0;
 	
 	req.addListener("response", function(response) {
 		var body = "";
@@ -26,20 +26,18 @@ function getTweetCount(uri) {
 		
 		req.addListener("end", function() {
 			tweetCount = JSON.parse(body);
-			
+			return (typeof(tweetCount)=='Array') ? tweetCount['count'] : tweetCount;
 		});
 	});
 	
 	req.end();
-	return tweetCount['count'];
-	
 }
     
 http.createServer(function(request, response) {
     var query = url.parse(request.url).query;
     
     response.writeHead(200, {"Content-Type": "text/html"});
-    response.write("query");
+    response.write(query);
     
     uris=new Array("http://www.thoughtcollective.com", "http://www.thezimbabwean.co.uk");
     for(i=0; i<uris.length; i++) {
