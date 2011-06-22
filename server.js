@@ -3,6 +3,7 @@ var sys = require("sys"),
     url = require("url"),
     path = require("path"),
     fs = require("fs");
+    util = require("util");
 
 var facebookLikeUrl="https://api.facebook.com/method/fql.query?format=json&query=select%20like_count,%20total_count,%20share_count,%20click_count%20from%20link_stat%20where%20url=%22{URI}%22",
     twitterCountUrl="http://urls.api.twitter.com/1/urls/count.json?url={URI}", //&callback=twttr.receiveCount
@@ -13,38 +14,44 @@ var twitter_client = http.createClient(80, "api.facebook.com"),
     tweet_response = '',
     fb_response = '';
 
-function getTweetCount(uri) {
+function getTweetCount(cli, uri) {
     
-    var req = twitter_client.request("GET", "/1/urls/count.json?url="+uri);
-	var tweetCount = 0;
-	
-	req.addListener("response", function(response) {
-		var body = "";
+    var req = twitter_client;
+	var tweetCount = 0;	
+	var body = "";
+
+	req
+	.addListener("response", function(response) {
 		req.addListener("data", function(data) {
-			body += data;
+		    console.log(data);
+			body = body + data;
 		});
 		
 		req.addListener("end", function() {
+
 			tweetCount = JSON.parse(body);
-			return (typeof(tweetCount)=='Array') ? tweetCount['count'] : tweetCount;
+			console.log(tweetCount);
+			cli.write(typeof(tweetCount)=='Array') ? tweetCount['count'] : tweetCount;
 		});
-	});
+	})
+	.request("GET", "/1/urls/count.json?url="+uri)
+	.end();
 	
-	req.end();
 }
     
 http.createServer(function(request, response) {
-    var query = url.parse(request.url).query;
+    var query = "hello!";
+    query = util.inspect(request.inspect);
     
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write(query);
     
     uris=new Array("http://www.thoughtcollective.com", "http://www.thezimbabwean.co.uk");
     for(i=0; i<uris.length; i++) {
-        tweet_response += "\n"+getTweetCount(uris[i])
+        getTweetCount(response, uris[i]);
     };
     
-    response.write(tweet_response); //JSON.stringify(json));
+ //JSON.stringify(json));
     response.end("Ending");
 
 }).listen(8124);
